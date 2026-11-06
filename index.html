@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salidas laborales: carreras y FP, con y sin máster</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f5f6fa;--card:#fff;--text:#161a23;--muted:#5b6475;--line:#e2e6ee;--acc:#4f46e5;--acc2:#eef0ff;--ok:#12805c;--ok2:#e5f6ef;--mas:#a14a00;--mas2:#fff1e0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1117;--card:#171b25;--text:#edf0f6;--muted:#9aa4b8;--line:#2a3142;--acc:#8b93ff;--acc2:#222645;--ok:#4cd6a1;--ok2:#132a24;--mas:#ffb35c;--mas2:#33250f}}
+:root[data-theme="dark"]{--bg:#0e1117;--card:#171b25;--text:#edf0f6;--muted:#9aa4b8;--line:#2a3142;--acc:#8b93ff;--acc2:#222645;--ok:#4cd6a1;--ok2:#132a24;--mas:#ffb35c;--mas2:#33250f}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:36px 16px 70px}
+h1{font-size:clamp(28px,6vw,40px);line-height:1.1;margin:0 0 8px;letter-spacing:-.025em}
+.sub{color:var(--muted);margin:0 0 22px}
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;margin-bottom:14px}
+.tabs button{flex:1;padding:11px;border:0;border-radius:10px;background:none;color:var(--muted);font:inherit;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--acc);color:#fff}
+input{width:100%;padding:15px 16px;font:inherit;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);outline:none}
+input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.chip{padding:8px 14px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:99px;font:inherit;font-size:14px;cursor:pointer}
+.chip:hover,.chip.on{border-color:var(--acc);background:var(--acc2)}
+.empty{color:var(--muted);font-size:14px;margin:10px 2px}
+#res{margin-top:22px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.top h2{margin:0;font-size:24px}
+.tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--acc2);color:var(--acc)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+.box h3{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px}
+.box.ok{border-left:5px solid var(--ok)}.box.ok h3{color:var(--ok)}
+.box.ms{border-left:5px solid var(--mas)}.box.ms h3{color:var(--mas)}
+ul{margin:0;padding-left:20px}li{margin:3px 0}
+.m{padding:12px 14px;border-radius:12px;background:var(--mas2);margin-top:10px}
+.m b{display:block}.m span{color:var(--muted);font-size:15px}
+.note{font-size:13px;color:var(--muted);margin-top:22px}
+</style>
+</head>
+<body>
+<main>
+<h1>🎓 ¿Qué hago con lo que estudio?</h1>
+<p class="sub">Elige tu carrera o tu FP y mira qué salidas tiene <b>sin</b> más estudios y <b>con</b> máster o formación extra.</p>
+<div class="tabs" role="tablist"><button id="tg" class="on">Carrera universitaria</button><button id="tf">Formación Profesional</button></div>
+<input id="q" type="search" placeholder="Escribe tu carrera… (ej. Psicología)" autocomplete="off">
+<div id="chips" class="chips"></div>
+<div id="res" aria-live="polite"></div>
+<p class="note">Información orientativa basada en el sistema educativo español. Los requisitos y la demanda cambian: confirma siempre en la universidad, el centro de FP o el colegio profesional.</p>
+</main>
+<script>
+const G=[
+{n:"Medicina",k:"medico doctor",s:["Médico/a sin especialidad (guardias, urgencias privadas, medicina de empresa)","Investigación clínica y farmacéutica"],m:[["Especialidad por MIR","Es la vía principal: tras el examen MIR eliges especialidad (pediatría, cirugía, familia…) y accedes a plazas públicas y privadas."],["Máster en Gestión Sanitaria","Dirección de hospitales y centros de salud."]]},
+{n:"Enfermería",k:"enfermero",s:["Enfermero/a en hospitales, centros de salud y residencias","Oposiciones al sistema público de salud","Enfermería de empresa y a domicilio"],m:[["Especialidad EIR (matrona, salud mental, geriatría…)","Plazas de especialista, más estabilidad y mejores puestos."],["Máster en Urgencias y Emergencias / Cuidados Críticos","UCI, 061, ambulancias medicalizadas."],["Máster en Gestión y Dirección de Enfermería","Supervisión y gestión de equipos."]]},
+{n:"Psicología",k:"psicologo",s:["Recursos humanos y selección","Servicios sociales, ONG y orientación","Investigación y docencia de apoyo"],m:[["Máster en Psicología General Sanitaria","Imprescindible para ejercer como psicólogo/a clínico en consulta privada."],["PIR (vía pública)","Psicólogo/a especialista en clínica en el sistema público."],["Máster en Psicología Jurídica o Neuropsicología","Peritajes, juzgados, rehabilitación cognitiva."]]},
+{n:"Derecho",k:"abogado juridico leyes",s:["Asesor/a jurídico en empresas y gestorías","Oposiciones (Administración, justicia, Policía, Guardia Civil)","Mediación y paralegal"],m:[["Máster de Acceso a la Abogacía","Obligatorio, junto al examen de Estado, para ejercer como abogado/a."],["Máster en Derecho Mercantil o Tributario","Despachos grandes y departamentos fiscales."],["Máster en Protección de Datos","Delegado/a de protección de datos (DPO)."]]},
+{n:"Administración y Dirección de Empresas (ADE)",k:"ade empresariales gestion",s:["Administrativo/a y analista junior en empresas","Banca y seguros","Oposiciones de gestión y economía"],m:[["MBA o Máster en Dirección de Empresas","Puestos de gestión y dirección."],["Máster en Finanzas","Banca de inversión, controller, auditoría."],["Máster en Recursos Humanos","Dirección de personas."]]},
+{n:"Economía",k:"economista",s:["Analista en consultoras y bancos","Técnico/a en administraciones públicas","Estudios de mercado"],m:[["Máster en Economía / Data Analytics","Banco de España, organismos, ciencia de datos."],["Máster en Finanzas o Auditoría","Auditoras y departamentos financieros."]]},
+{n:"Marketing y Publicidad",k:"marketing publicidad rrpp",s:["Community manager y social media","Técnico/a de marketing digital y SEO","Ayudante en agencias y ventas"],m:[["Máster en Marketing Digital / Growth","Responsable de marketing y estrategia."],["Máster en Comunicación Corporativa","Dirección de comunicación y marca."],["Máster en Data y Analítica de Marketing","Perfiles analíticos muy demandados."]]},
+{n:"Periodismo y Comunicación",k:"periodista comunicacion audiovisual",s:["Redactor/a en medios y gabinetes de prensa","Creación de contenido y redes","Locución, producción y edición audiovisual"],m:[["Máster en Periodismo de Datos","Verificación, datos, medios digitales."],["Máster en Comunicación Política o Corporativa","Asesor/a de comunicación en instituciones y empresas."],["Máster en Producción Audiovisual","Cine, TV y plataformas."]]},
+{n:"Educación Infantil",k:"maestro magisterio infantil",s:["Maestro/a en colegios y escuelas infantiles","Oposiciones de Educación Infantil","Ludotecas y educación no formal"],m:[["Máster en Necesidades Educativas Especiales","Apoyo y educación inclusiva."],["Máster en Psicopedagogía","Orientación educativa."],["Máster en Dirección de Centros","Jefatura de estudios y dirección."]]},
+{n:"Educación Primaria",k:"maestro magisterio primaria",s:["Maestro/a en colegios públicos y privados","Oposiciones de Primaria","Profesor/a particular y academias"],m:[["Máster en Psicopedagogía","Departamentos de orientación."],["Máster en Educación Bilingüe / TIC","Colegios bilingües y tecnología educativa."],["Máster en Necesidades Educativas Especiales","Pedagogía terapéutica y audición y lenguaje."]]},
+{n:"Ingeniería Informática",k:"informatica software programacion sistemas",s:["Desarrollador/a de software y web","Técnico/a de sistemas, redes y soporte","QA y testing"],m:[["Máster en Inteligencia Artificial o Ciencia de Datos","Data scientist e ingeniero/a de IA."],["Máster en Ciberseguridad","Perfil con muchísima demanda."],["Máster en Ingeniería Informática","Habilitante para dirección de proyectos y gestión TI."]]},
+{n:"Ingeniería Industrial / Mecánica / Eléctrica",k:"ingeniero industrial mecanica electrica",s:["Ingeniero/a junior en producción, mantenimiento y calidad","Oficina técnica y proyectos","Energía y automoción"],m:[["Máster en Ingeniería Industrial","Habilitante: firma de proyectos y puestos de dirección técnica."],["Máster en Energías Renovables","Solar, eólica, eficiencia."],["Máster en Automatización y Robótica","Industria 4.0."]]},
+{n:"Arquitectura",k:"arquitecto",s:["Delineante/proyectista y ayudante en estudios","Técnico/a BIM","Interiorismo y rehabilitación (sin firmar proyectos)"],m:[["Máster Habilitante en Arquitectura","Obligatorio para ejercer como arquitecto/a y firmar proyectos."],["Máster en Urbanismo o BIM","Especialización técnica y administración pública."]]},
+{n:"Biología / Biotecnología",k:"biologo biotecnologia",s:["Técnico/a de laboratorio","Gestión ambiental y consultoras","Control de calidad alimentaria"],m:[["Máster en Biotecnología o Biomedicina","Investigación e industria farmacéutica."],["Máster en Bioinformática","Biología con datos, muy buena salida."],["Máster de Profesorado (MAES)","Profesor/a de ESO y Bachillerato."]]},
+{n:"Química / Física / Matemáticas",k:"quimica fisica matematicas ciencias",s:["Laboratorio, calidad e industria (Química)","Analista de datos y finanzas (Matemáticas)","Oposiciones de ciencias"],m:[["Máster de Profesorado (MAES)","Docencia en secundaria."],["Máster en Ciencia de Datos / Estadística","Analista de datos, banca, tecnología."],["Doctorado (vía máster de investigación)","Carrera investigadora y universidad."]]},
+{n:"Farmacia",k:"farmaceutico",s:["Farmacéutico/a en oficina de farmacia","Farmacia hospitalaria (tras FIR)","Industria y control de calidad"],m:[["Residencia FIR","Farmacéutico/a especialista en hospitales."],["Máster en Industria Farmacéutica","Registros, calidad y asuntos regulatorios."],["Máster en Nutrición y Dietética","Consulta y alimentación."]]},
+{n:"Veterinaria",k:"veterinario",s:["Clínica de pequeños animales","Granjas, producción y seguridad alimentaria","Oposiciones sanitarias"],m:[["Especialidad (residencia veterinaria)","Cirugía, animales exóticos, equina."],["Máster en Sanidad y Producción Animal","Industria ganadera y agroalimentaria."]]},
+{n:"Fisioterapia",k:"fisio",s:["Fisioterapeuta en clínicas, hospitales y mutuas","Fisio deportivo en clubes","Ejercicio por cuenta propia"],m:[["Máster en Fisioterapia Deportiva","Clubes y alto rendimiento."],["Máster en Osteopatía / Terapia Manual","Consulta propia especializada."],["Máster en Neurorrehabilitación","Hospitales y centros de daño cerebral."]]},
+{n:"Ciencias de la Actividad Física y del Deporte",k:"cafyd deporte inef",s:["Entrenador/a personal y de gimnasio","Monitor/a deportivo en ayuntamientos","Entrenamiento de clubes"],m:[["Máster de Profesorado (MAES)","Profesor/a de Educación Física."],["Máster en Alto Rendimiento","Preparación física en equipos."],["Máster en Gestión Deportiva","Dirección de instalaciones y clubes."]]},
+{n:"Trabajo Social / Educación Social",k:"trabajador social educador",s:["Servicios sociales y ONG","Centros de menores, mayores y discapacidad","Oposiciones sociales"],m:[["Máster en Intervención Social / Mediación","Coordinación de programas y mediación."],["Máster en Igualdad o Cooperación","Organismos y ONG internacionales."]]},
+{n:"Turismo",k:"turistico hosteleria",s:["Recepción, agencias y gestión hotelera","Guía y gestión cultural","Eventos y organización"],m:[["Máster en Dirección Hotelera","Dirección de hoteles y cadenas."],["Máster en Marketing Turístico / Revenue","Perfiles de gestión y comercial."]]},
+{n:"Diseño (gráfico, producto, moda)",k:"diseno grafico disenador",s:["Diseñador/a gráfico en estudios y agencias","Maquetación y diseño web","Freelance y portfolio propio"],m:[["Máster en UX/UI","Producto digital, muy demandado."],["Máster en Dirección de Arte","Puestos creativos senior."]]},
+{n:"Historia / Filología / Traducción",k:"historiador filologia letras humanidades",s:["Traducción, corrección y edición","Archivos, museos y gestión cultural","Academias de idiomas"],m:[["Máster de Profesorado (MAES)","Profesor/a de secundaria; la salida más frecuente."],["Máster en Traducción o Interpretación","Traductor/a profesional e institucional."],["Máster en Archivística o Patrimonio","Administración pública y museos."]]}];
+
+const F=[
+{n:"Gestión Administrativa (Grado Medio)",k:"administrativo gm",s:["Auxiliar administrativo/a en empresas y gestorías","Atención al cliente y oficinas públicas (oposiciones de auxiliar)"],m:[["Grado Superior en Administración y Finanzas","Administrativo/a contable, banca, gestión de personal."]]},
+{n:"Cuidados Auxiliares de Enfermería (Grado Medio)",k:"tcae auxiliar enfermeria",s:["TCAE en hospitales, residencias y centros de salud","Oposiciones al sistema de salud","Atención domiciliaria"],m:[["Grado Superior (Dietética, Higiene Bucodental, Anatomía Patológica…)","Técnico/a sanitario especializado."],["Grado en Enfermería","Acceso con nota de FP y pruebas; mucha demanda."]]},
+{n:"Instalaciones Eléctricas y Automáticas (Grado Medio)",k:"electricista",s:["Electricista instalador/a","Mantenimiento de edificios e industria","Autónomo/a con carné de instalador"],m:[["Grado Superior en Automatización y Robótica Industrial","Técnico/a de automatismos y PLC."],["Grado en Ingeniería Eléctrica o Industrial","Ingeniería con convalidaciones."]]},
+{n:"Cocina y Gastronomía (Grado Medio)",k:"cocinero hosteleria",s:["Cocinero/a en restaurantes y hoteles","Catering y colectividades"],m:[["Grado Superior en Dirección de Cocina","Jefe/a de cocina y gestión."],["Grado en Ciencia y Tecnología Gastronómica","Perfil técnico y de innovación."]]},
+{n:"Desarrollo de Aplicaciones Multiplataforma / Web (DAM/DAW)",k:"dam daw programador informatica",s:["Programador/a junior (web, móvil, backend)","Soporte técnico y testing","Freelance en desarrollo web"],m:[["Curso de especialización en Inteligencia Artificial y Big Data","Datos e IA aplicada, muy demandado."],["Curso de especialización en Ciberseguridad","Seguridad en entornos TI."],["Grado en Ingeniería Informática","Convalidas parte de los créditos."]]},
+{n:"Administración de Sistemas Informáticos en Red (ASIR)",k:"asir sistemas redes",s:["Técnico/a de sistemas y redes","Soporte IT y cloud","Administrador/a junior"],m:[["Curso de especialización en Ciberseguridad","Analista en seguridad (SOC)."],["Curso de especialización en Cloud / DevOps","Infraestructura moderna."],["Grado en Informática o Telecomunicaciones","Acceso directo con convalidación."]]},
+{n:"Administración y Finanzas (Grado Superior)",k:"finanzas contable",s:["Administrativo/a contable y financiero","Gestión de nóminas y personal","Banca y seguros"],m:[["Grado en ADE / Economía / Empresariales","Convalidas parte del grado."],["Máster tras el grado","Finanzas, auditoría, RR. HH."]]},
+{n:"Marketing y Publicidad (Grado Superior)",k:"marketing publicidad",s:["Ayudante de marketing y comercial","Community manager","Atención y ventas en empresas"],m:[["Grado en Marketing / Publicidad","Más opciones de puestos de dirección."],["Cursos de especialización en marketing digital","Perfiles técnicos y analíticos."]]},
+{n:"Educación Infantil (Grado Superior)",k:"tei infantil",s:["Técnico/a en escuelas infantiles de 0-3 años","Ludotecas y centros de ocio","Apoyo en aulas"],m:[["Grado en Educación Infantil / Primaria","Para ser maestro/a y opositar."],["Grado Superior en Integración Social","Ámbito social y de apoyo."]]},
+{n:"Integración Social (Grado Superior)",k:"integrador social",s:["Integrador/a social en residencias, centros de menores y ONG","Servicios sociales municipales"],m:[["Grado en Trabajo Social / Educación Social","Puestos de coordinación."],["Cursos de especialización en atención a personas dependientes","Perfil más técnico."]]},
+{n:"Higiene Bucodental (Grado Superior)",k:"higienista dental",s:["Higienista en clínicas dentales","Prevención y educación sanitaria"],m:[["Grado en Odontología (con prueba de acceso)","Para ser odontólogo/a."],["Grado en Enfermería","Con convalidaciones."]]},
+{n:"Laboratorio Clínico y Biomédico (Grado Superior)",k:"laboratorio sanitario",s:["Técnico/a de laboratorio en hospitales y centros de análisis","Industria farmacéutica y control de calidad"],m:[["Grado en Biología / Biotecnología / Química","Con convalidaciones."],["Grado Superior en Anatomía Patológica","Segunda especialización sanitaria."]]},
+{n:"Animaciones 3D, Juegos y Entornos Interactivos (Grado Superior)",k:"videojuegos 3d animacion",s:["Modelador/a y animador/a 3D","Estudios de videojuegos y VFX","Freelance"],m:[["Grado en Diseño y Desarrollo de Videojuegos","Perfil técnico y de producto."],["Cursos de especialización creativa (VFX, realidad virtual)","Portfolio más potente."]]}];
+
+G.push(
+{n:"Odontología",k:"dentista",s:["Odontólogo/a en clínicas y mutuas","Clínica propia o franquicias"],m:[["Máster en Ortodoncia","Especialidad con alta demanda."],["Máster en Implantología","Cirugía e implantes."]]},
+{n:"Ingeniería Civil / Caminos",k:"caminos obras publicas ingeniero civil",s:["Técnico/a de obra y topografía","Consultoras y constructoras","Oposiciones de obras públicas"],m:[["Máster en Ingeniería de Caminos, Canales y Puertos","Habilitante: dirección y firma de proyectos."],["Máster en Gestión de Infraestructuras","Dirección de grandes obras."]]},
+{n:"Ingeniería de Telecomunicaciones",k:"telecos telecomunicaciones",s:["Redes, 5G y fibra","Desarrollo de software y sistemas","Soporte técnico en operadoras"],m:[["Máster en Ingeniería de Telecomunicación","Habilitante para proyectos y dirección."],["Máster en Ciberseguridad o IoT","Perfiles muy buscados."]]},
+{n:"Ingeniería Aeroespacial",k:"aeronautica aviones",s:["Mantenimiento y calidad aeronáutica","Oficina técnica en industria auxiliar"],m:[["Máster en Ingeniería Aeronáutica","Diseño y dirección en Airbus, ESA y similares."],["Máster en Sistemas Espaciales","Satélites y lanzadores."]]},
+{n:"Ingeniería Química",k:"quimica industrial procesos",s:["Técnico/a de procesos y calidad","Refino, farma y alimentación"],m:[["Máster en Ingeniería Química","Dirección de plantas y procesos."],["Máster en Prevención de Riesgos","Seguridad industrial."]]},
+{n:"Ingeniería Agrónoma / Forestal",k:"agronomo agricola forestal",s:["Técnico/a en explotaciones y cooperativas","Asesoría agroalimentaria","Gestión forestal"],m:[["Máster en Ingeniería Agronómica","Habilitante: proyectos y dirección."],["Máster en Agricultura Digital","Agricultura de precisión."]]},
+{n:"Ciencias Ambientales",k:"ambiental medio ambiente",s:["Consultoría ambiental y estudios de impacto","Gestión de residuos y calidad del agua","Administración pública"],m:[["Máster en Gestión Ambiental / Sostenibilidad","Responsable de sostenibilidad en empresas."],["Máster en Cambio Climático","Energía y políticas climáticas."]]},
+{n:"Geología",k:"geologo",s:["Geotecnia y minería","Consultoras de ingeniería","Sondeos y estudios del terreno"],m:[["Máster en Geología Aplicada / Hidrogeología","Agua y obra civil."],["Máster de Profesorado (MAES)","Docencia en secundaria."]]},
+{n:"Estadística / Ciencia de Datos e IA",k:"datos inteligencia artificial data science estadistico",s:["Analista de datos y BI","Banca, seguros y sanidad","Consultoría tecnológica"],m:[["Máster en Machine Learning / IA","Data scientist e ingeniero/a de IA."],["Máster en Bioestadística","Investigación clínica y farmacéutica."]]},
+{n:"Nutrición y Dietética",k:"dietista nutricionista",s:["Dietista en consulta, clínicas y gimnasios","Restauración colectiva e industria"],m:[["Máster en Nutrición Clínica / Deportiva","Hospitales y deporte."],["Máster en Seguridad Alimentaria","Control y calidad."]]},
+{n:"Terapia Ocupacional",k:"terapeuta ocupacional",s:["Residencias, hospitales y centros de día","Asociaciones y atención temprana"],m:[["Máster en Neurorrehabilitación","Daño cerebral e ictus."],["Máster en Geriatría","Envejecimiento y dependencia."]]},
+{n:"Logopedia",k:"logopeda",s:["Logopeda en gabinetes y colegios","Hospitales y rehabilitación"],m:[["Máster en Neurología del Lenguaje","Afasias y daño cerebral."],["Máster en Voz","Docentes y profesionales de la voz."]]},
+{n:"Podología",k:"podologo",s:["Clínicas podológicas y mutuas","Consulta propia"],m:[["Máster en Podología Deportiva","Clubes y alto rendimiento."],["Máster en Cirugía Podológica","Intervenciones y pie diabético."]]},
+{n:"Ciencia Política / Relaciones Internacionales",k:"politologo politica internacionales",s:["Asesoría en partidos e instituciones","Análisis político y consultoras","Oposiciones de la Administración"],m:[["Máster en Comunicación Política","Campañas y gabinetes."],["Máster en Relaciones Internacionales o Cooperación","ONG, ONU, diplomacia."]]},
+{n:"Sociología / Antropología / Filosofía",k:"sociologo filosofia antropologia",s:["Investigación social y estudios de mercado","Recursos humanos y consultoría","Gestión cultural"],m:[["Máster en Big Data Social / Análisis de Datos","Perfil analítico muy buscado."],["Máster de Profesorado (MAES)","Docencia en secundaria."]]},
+{n:"Criminología / Seguridad",k:"criminologo",s:["Seguridad privada y prevención de pérdidas","Servicios penitenciarios y mediación","Oposiciones policiales"],m:[["Máster en Criminología Aplicada","Peritaje y análisis criminal."],["Máster en Ciberdelincuencia","Delitos informáticos."]]},
+{n:"Bellas Artes",k:"artista arte",s:["Artista y galerías","Ilustración y diseño","Talleres y museos"],m:[["Máster de Profesorado (MAES)","Profesor/a de Educación Plástica."],["Máster en Restauración o Gestión Cultural","Museos y patrimonio."]]},
+{n:"Pedagogía / Psicopedagogía",k:"pedagogo",s:["Formación en empresas","Orientación educativa y gabinetes","Editoriales educativas"],m:[["Máster en Orientación Educativa","Departamentos de orientación."],["Máster en Diseño Instruccional / eLearning","Formación online."]]},
+{n:"Relaciones Laborales y Recursos Humanos",k:"rrhh laborales graduado social",s:["Técnico/a de RR. HH. y nóminas","Gestorías y asesorías laborales","Oposiciones de Inspección de Trabajo"],m:[["Máster en Prevención de Riesgos Laborales","Técnico/a superior de prevención."],["Máster en Dirección de Personas","Gestión del talento."]]},
+{n:"Finanzas y Contabilidad",k:"contable auditor",s:["Contable y analista en empresas","Banca y seguros","Auditoría junior"],m:[["Máster en Auditoría de Cuentas","Auditor/a profesional."],["Máster en Banca y Mercados","Inversión y gestión de activos."]]},
+{n:"Comercio Internacional / Logística",k:"logistica exportacion transporte",s:["Técnico/a de exportación y logística","Agentes de aduanas y transitarios"],m:[["Máster en Supply Chain / Logística","Dirección logística."],["Máster en Negocios Internacionales","Expansión y comercio exterior."]]},
+{n:"Ingeniería Electrónica / Robótica / Biomédica",k:"electronica robotica biomedica mecatronica",s:["Diseño y mantenimiento electrónico","Automatización industrial","Equipamiento hospitalario"],m:[["Máster en Robótica y Automática","Industria 4.0."],["Máster en Ingeniería Biomédica","Dispositivos médicos."]]},
+{n:"Desarrollo de Videojuegos",k:"videojuegos game",s:["Programador/a de juegos y herramientas","Testing y producción"],m:[["Máster en Game Design / Programación","Estudios y producción."],["Máster en Realidad Virtual","XR y simulación."]]},
+{n:"Educación Social",k:"educador social",s:["Centros de menores y reinserción","Programas municipales y ONG"],m:[["Máster en Intervención Familiar","Servicios sociales."],["Máster en Mediación","Resolución de conflictos."]]},
+{n:"Geografía y Ordenación del Territorio",k:"geografo urbanismo sig",s:["Técnico/a SIG y cartografía","Ayuntamientos y urbanismo"],m:[["Máster en SIG y Teledetección","Datos geoespaciales."],["Máster en Planificación Urbana","Planificación territorial."]]},
+{n:"Gestión Deportiva / Magisterio de Educación Física",k:"educacion fisica deporte",s:["Monitor/a y coordinador/a deportivo","Clubes y ayuntamientos"],m:[["Máster de Profesorado (MAES)","Profesor/a de Educación Física."],["Máster en Dirección Deportiva","Gestión de clubes y eventos."]]}
+);
+F.push(
+{n:"Sistemas Microinformáticos y Redes (SMR, Grado Medio)",k:"smr microinformatica",s:["Técnico/a de soporte y reparación","Montaje de redes pequeñas"],m:[["Grado Superior en ASIR o DAM/DAW","Sistemas, redes o programación."]]},
+{n:"Electromecánica de Vehículos (Grado Medio)",k:"mecanico coches",s:["Mecánico/a en talleres y concesionarios","Taller propio"],m:[["Grado Superior en Automoción","Jefe/a de taller y diagnosis."],["Grado en Ingeniería Mecánica","Con convalidaciones."]]},
+{n:"Farmacia y Parafarmacia (Grado Medio)",k:"auxiliar farmacia",s:["Técnico/a en oficinas de farmacia","Parafarmacia y distribución"],m:[["Grado Superior en Laboratorio Clínico o Dietética","Sanitario especializado."],["Grado en Farmacia o Nutrición","Con prueba de acceso."]]},
+{n:"Emergencias Sanitarias (Grado Medio)",k:"tes ambulancia",s:["Técnico/a en ambulancias y transporte sanitario","Eventos y protección civil"],m:[["Grado Superior en Coordinación de Emergencias","Mando y coordinación."],["Grado en Enfermería","Con nota de FP."]]},
+{n:"Peluquería y Estética (Grado Medio)",k:"peluquero estetica",s:["Peluquero/a y esteticista en salones","Negocio propio"],m:[["Grado Superior en Estética Integral y Bienestar","Centros de bienestar y spas."],["Grado Superior en Asesoría de Imagen","Imagen personal."]]},
+{n:"Soldadura y Mecanizado (Grado Medio)",k:"soldador mecanizado",s:["Soldador/a y operario/a de CNC","Astilleros, industria y metal"],m:[["Grado Superior en Fabricación Mecánica","Programación CNC y calidad."]]},
+{n:"Climatización y Frío (Grado Medio)",k:"frio aire acondicionado instalador",s:["Instalador/a de aire acondicionado y calefacción","Mantenimiento de edificios"],m:[["Grado Superior en Eficiencia Energética","Auditoría y proyectos."]]},
+{n:"Actividades Comerciales (Grado Medio)",k:"comercio dependiente",s:["Dependiente/a y reposición","Atención al cliente"],m:[["Grado Superior en Gestión de Ventas","Responsable comercial."]]},
+{n:"Dietética (Grado Superior)",k:"dietetica",s:["Técnico/a en dietética en clínicas y hospitales","Comedores colectivos"],m:[["Grado en Nutrición Humana y Dietética","Dietista-nutricionista."]]},
+{n:"Imagen para el Diagnóstico (Grado Superior)",k:"rayos tecnico radiologia",s:["Técnico/a en radiología y resonancias","Hospitales públicos y privados"],m:[["Curso de especialización en Radioterapia","Oncología."],["Grado en Enfermería o Fisioterapia","Con convalidaciones."]]},
+{n:"Educación y Control Ambiental (Grado Superior)",k:"ambiental",s:["Educador/a ambiental","Control de calidad ambiental"],m:[["Grado en Ciencias Ambientales","Consultoría y gestión."]]},
+{n:"Gestión de Alojamientos y Agencias de Viajes (Grado Superior)",k:"turismo hotel viajes",s:["Recepción y gestión hotelera","Agencias y turoperadores"],m:[["Grado en Turismo","Dirección hotelera."]]},
+{n:"Transporte y Logística (Grado Superior)",k:"logistica almacen",s:["Gestor/a de tráfico y almacén","Operador/a logístico"],m:[["Grado en Logística y Comercio Internacional","Puestos de dirección."]]},
+{n:"Comercio Internacional (Grado Superior)",k:"exportacion",s:["Técnico/a de importación y exportación","Agente de aduanas"],m:[["Grado en Negocios Internacionales","Expansión internacional."]]},
+{n:"Automatización y Robótica Industrial (Grado Superior)",k:"robotica plc automatizacion",s:["Técnico/a de automatismos y robots","Mantenimiento industrial"],m:[["Curso de especialización en Robótica Colaborativa","Cobots."],["Grado en Ing. Electrónica o Industrial","Con convalidaciones."]]},
+{n:"Sistemas Electrotécnicos y Automatizados (Grado Superior)",k:"electrotecnia",s:["Proyectos eléctricos en edificios e industria","Energía y mantenimiento"],m:[["Curso de especialización en Energías Renovables","Solar y eólica."],["Grado en Ingeniería Eléctrica","Con convalidaciones."]]},
+{n:"Proyectos de Edificación / Obra Civil (Grado Superior)",k:"delineante arquitectura aparejador",s:["Delineante/proyectista y técnico/a BIM","Control de obra"],m:[["Grado en Arquitectura Técnica","Aparejador/a."],["Curso de especialización en BIM","Modelado de edificios."]]},
+{n:"Producción de Audiovisuales y Sonido (Grado Superior)",k:"audiovisual cine sonido",s:["Cámara, edición y sonido","Televisión, cine y eventos"],m:[["Grado en Comunicación Audiovisual","Dirección y producción."]]},
+{n:"Animación Sociocultural y Turística (Grado Superior)",k:"animador monitor ocio",s:["Animador/a en hoteles y ayuntamientos","Ocio y tiempo libre"],m:[["Grado en Educación Social o Turismo","Coordinación."]]},
+{n:"Acondicionamiento Físico (Grado Superior)",k:"entrenador gimnasio",s:["Entrenador/a en gimnasios y centros deportivos","Fitness y salud"],m:[["Grado en Ciencias del Deporte","Alto rendimiento y docencia."]]},
+{n:"Estética Integral y Bienestar (Grado Superior)",k:"estetica spa",s:["Esteticista en centros de bienestar y spas","Negocio propio"],m:[["Cursos de especialización en estética avanzada","Medicina estética."]]},
+{n:"Asistencia a la Dirección (Grado Superior)",k:"secretariado asistente",s:["Asistente de dirección y secretaría ejecutiva","Idiomas y gestión de agendas"],m:[["Grado en ADE o Turismo","Más opciones de gestión."]]},
+{n:"Cocina: Dirección de Cocina y Pastelería (Grado Superior)",k:"chef pasteleria",s:["Jefe/a de cocina y pastelero/a","Restaurantes de alto nivel"],m:[["Grado en Gastronomía","Innovación y gestión."]]}
+);
+
+G.sort((a,b)=>a.n.localeCompare(b.n,'es'));F.sort((a,b)=>a.n.localeCompare(b.n,'es'));
+const $=id=>document.getElementById(id);
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+let mode="g",cur=null;
+const data=()=>mode==="g"?G:F;
+function chips(){
+  const q=norm($("q").value.trim()),list=data().filter(d=>!q||norm(d.n+" "+d.k).includes(q));
+  $("chips").innerHTML=list.map(d=>`<button class="chip${cur===d?" on":""}" data-n="${d.n}">${d.n}</button>`).join("")||'<p class="empty">No tengo esa opción todavía. Prueba con una parecida o cambia de pestaña.</p>';
+}
+function show(d){
+  cur=d;chips();
+  const g=mode==="g",li=a=>a.map(x=>`<li>${x}</li>`).join("");
+  $("res").innerHTML=`<div class="top"><h2>${d.n}</h2><span class="tag">${g?"Grado":"FP"}</span></div>
+  <div class="box ok"><h3>✅ ${g?"Sin máster: puedes trabajar de…":"Al terminar el ciclo: puedes trabajar de…"}</h3><ul>${li(d.s)}</ul></div>
+  <div class="box ms"><h3>🚀 ${g?"Con máster o posgrado:":"Si sigues formándote:"}</h3>${d.m.map(x=>`<div class="m"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("")}</div>`;
+  $("res").scrollIntoView({block:"nearest"});
+}
+function setMode(m){
+  mode=m;cur=null;$("res").innerHTML="";$("q").value="";
+  $("tg").classList.toggle("on",m==="g");$("tf").classList.toggle("on",m==="f");
+  $("q").placeholder=m==="g"?"Escribe tu carrera… (ej. Psicología)":"Escribe tu FP… (ej. DAM, TCAE)";chips();
+}
+$("tg").onclick=()=>setMode("g");$("tf").onclick=()=>setMode("f");
+$("q").oninput=chips;
+$("q").onkeydown=e=>{if(e.key==="Enter"){const q=norm($("q").value.trim()),r=data().find(d=>norm(d.n+" "+d.k).includes(q));if(r)show(r)}};
+$("chips").onclick=e=>{const b=e.target.closest(".chip");if(b)show(data().find(d=>d.n===b.dataset.n))};
+chips();
+</script>
+</body>
+</html>
